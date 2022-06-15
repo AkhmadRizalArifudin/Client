@@ -76,12 +76,15 @@ public class MainActivity extends AppCompatActivity {
         mSocket.on("typing",onTyping);
         mSocket.on("stop typing",onStopTyping);
     }
+
+    //sign request ke loginactivity
     private void signIn(){
         mUsername=null;
         Intent i=new Intent(this,LoginActivity.class);
         startActivityForResult(i,REQUEST_CODE);
     }
 
+    //result login diproses
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
