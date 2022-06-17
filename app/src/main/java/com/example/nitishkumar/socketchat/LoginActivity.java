@@ -1,6 +1,7 @@
 package com.example.nitishkumar.socketchat;
 
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -21,6 +22,10 @@ import io.socket.emitter.Emitter;
 
 import static com.example.nitishkumar.socketchat.MainActivity.mSocket;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,6 +63,8 @@ public class LoginActivity extends AppCompatActivity {
     private void login(View v) {
         String username=mUsernameEditText.getText().toString().trim();
         String password=mPasswordEditText.getText().toString().trim();
+        AssetManager assetManager = getAssets();
+
         if(TextUtils.isEmpty(username)){
             Snackbar.make(v,"Enter username",Snackbar.LENGTH_SHORT).show();
             mUsernameEditText.requestFocus();
@@ -67,6 +74,27 @@ public class LoginActivity extends AppCompatActivity {
             mPasswordEditText.requestFocus();
             return;
         }
+        //TODO read CN as hiden input trus up ke server buat validate
+        try {
+            InputStream input;
+            try {
+                input = assetManager.open("helloworld.txt");
+
+                int size = input.available();
+                byte[] buffer = new byte[size];
+                input.read(buffer);
+                input.close();
+
+                // byte buffer into a string
+                String text = new String(buffer);
+
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+        } catch (IOException ioe)
+        {ioe.printStackTrace();}
         mUsername=username;
         mPassword=password;
         mSocket.connect();
