@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.math.BigInteger;
 
 
 public class LoginActivity extends AppCompatActivity {
@@ -51,6 +52,7 @@ public class LoginActivity extends AppCompatActivity {
         });
         mSocket.on(Socket.EVENT_CONNECT,onConnect);
         mSocket.on("login",onLogin);
+        mSocket.on("cred",onCred);
     }
 
     @Override
@@ -74,27 +76,8 @@ public class LoginActivity extends AppCompatActivity {
             mPasswordEditText.requestFocus();
             return;
         }
-        //TODO read CN as hiden input trus up ke server buat validate
-        try {
-            InputStream input;
-            try {
-                input = assetManager.open("helloworld.txt");
 
-                int size = input.available();
-                byte[] buffer = new byte[size];
-                input.read(buffer);
-                input.close();
 
-                // byte buffer into a string
-                String text = new String(buffer);
-
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
-        } catch (IOException ioe)
-        {ioe.printStackTrace();}
         mUsername=username;
         mPassword=password;
         mSocket.connect();
@@ -106,14 +89,70 @@ public class LoginActivity extends AppCompatActivity {
         public void call(Object... args) {
             if(!isConnected){
                 isConnected=true;
-                Map<String, String> loginDetails = new HashMap<String, String>();
-                loginDetails.put("user", mUsername);
-                loginDetails.put("pass", mPassword);
+                System.out.println("tesarar");
+                JSONObject loginDetails = new JSONObject();
+                try {
+                    loginDetails.put("user", mUsername);
+                    loginDetails.put("pass", mPassword);
+                } catch (JSONException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+//                Map<String, String> loginDetails = new HashMap<String, String>();
+//                loginDetails.put("pass", mPassword);
                 mSocket.emit("add user",loginDetails);
             }
             else{
                 Log.w("-->>","onConnect Failure");
             }
+        }
+    };
+
+    private Emitter.Listener onCred=new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            JSONObject data= (JSONObject) args[0];
+            String CN=null;
+            String modulus=null;
+
+            try {
+                System.out.println(data.toString(4));
+                CN=data.getString("CN");
+                System.out.println(CN);
+                modulus=data.getString("mod");
+            }catch (JSONException e){
+                e.printStackTrace();
+            }
+
+            //TODO read CN as hiden input trus up ke server buat validate
+            InputStream input;
+            Boolean cek = false;
+            try {
+                input = getAssets().open(CN+".key");
+
+                int size = input.available();
+                byte[] buffer = new byte[size];
+                input.read(buffer);
+                input.close();
+
+                // byte buffer into a string
+                //String [] name = input.getText().toString();
+                String[] priv = new String(buffer).split("\n");
+
+                if (modulus.equals((new BigInteger(priv[0])).multiply(new BigInteger(priv[1])).toString())) {
+                    cek = true;
+                }
+
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+//            Intent i=new Intent();
+//            i.putExtra("CN",mUsername);
+//            i.putExtra("numUsers",numUsers);
+//            setResult(RESULT_OK,i);
+            mSocket.emit("validate",cek);
+            finish();
         }
     };
 

@@ -12,7 +12,7 @@ import io.socket.client.Socket;
  */
 
 public class ChatApp extends Application {
-    private final String CHAT_URL="http://192.168.91.19:99999/";
+    private final String CHAT_URL="http://192.168.91.111:3000/";
     private Socket mSocket;
     {
         try {
