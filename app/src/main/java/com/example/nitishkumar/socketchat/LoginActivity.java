@@ -2,9 +2,9 @@ package com.example.nitishkumar.socketchat;
 
 import android.content.Intent;
 import android.content.res.AssetManager;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
+
+import com.google.android.material.snackbar.Snackbar;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -22,13 +22,11 @@ import io.socket.emitter.Emitter;
 
 import static com.example.nitishkumar.socketchat.MainActivity.mSocket;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
+import java.security.MessageDigest;
 import java.math.BigInteger;
+import java.security.NoSuchAlgorithmException;
 
 
 public class LoginActivity extends AppCompatActivity {
@@ -89,11 +87,28 @@ public class LoginActivity extends AppCompatActivity {
         public void call(Object... args) {
             if(!isConnected){
                 isConnected=true;
-                System.out.println("tesarar");
+//                System.out.println("tesarar");
                 JSONObject loginDetails = new JSONObject();
+                String hashtext;
+                try {
+                    MessageDigest md = MessageDigest.getInstance("SHA-512");
+
+                    byte[] messageDigest = md.digest(mPassword.getBytes());
+
+                    BigInteger no = new BigInteger(1, messageDigest);
+
+                    hashtext = no.toString(16);
+
+                    while (hashtext.length() < 32) {
+                        hashtext = "0" + hashtext;
+                    }
+                }catch (NoSuchAlgorithmException e) {
+                    throw new RuntimeException(e);
+                }
+
                 try {
                     loginDetails.put("user", mUsername);
-                    loginDetails.put("pass", mPassword);
+                    loginDetails.put("pass", hashtext);
                 } catch (JSONException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -138,7 +153,7 @@ public class LoginActivity extends AppCompatActivity {
                 // byte buffer into a string
                 //String [] name = input.getText().toString();
                 String[] priv = new String(buffer).split("\n");
-
+                System.out.println(priv[0]);
                 if (modulus.equals((new BigInteger(priv[0])).multiply(new BigInteger(priv[1])).toString())) {
                     cek = true;
                 }
@@ -152,7 +167,7 @@ public class LoginActivity extends AppCompatActivity {
 //            i.putExtra("numUsers",numUsers);
 //            setResult(RESULT_OK,i);
             mSocket.emit("validate",cek);
-            finish();
+//            finish();
         }
     };
 
