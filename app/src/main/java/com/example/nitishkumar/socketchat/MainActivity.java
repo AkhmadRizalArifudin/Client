@@ -27,8 +27,10 @@ import android.widget.TextView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -344,8 +346,26 @@ public class MainActivity extends AppCompatActivity {
         editMessage.setText("");
         addMessage(mUsername, message,Message.TYPE_MESSAGE_SENT);
 
-        mSocket.emit("Get Modulus", message);
+//        mSocket.emit("get modulus", message);
 
+//        mSocket.on("send modulus", new Emitter.Listener() {
+//            @Override
+//            public void call(final Object... args) {
+//                Log.w(TAG,"onSendMod");
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        Scanner scanner;
+//                        for(scanner = new Scanner(new File("E:\\IKP\\ta\\SID\\" + userName + "_" + t + ".txt")); scanner.hasNextLine(); scrt = scanner.nextLine()) {
+//                        }
+//
+//                        String text = message.substring(message.indexOf(")") + 1, clientMessage.length());
+//                        String[] Message = RabinCryptosystem.enc(text, scrt, n);
+//                        this.server.privatebr("(secured)" + Message[0], t);
+//                    }
+//                });
+//            }
+//        });
         // perform the sending message attempt.
         mSocket.emit("new message", message);
     }

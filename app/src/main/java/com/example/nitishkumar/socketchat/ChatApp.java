@@ -12,12 +12,14 @@ import io.socket.client.Socket;
  */
 
 public class ChatApp extends Application {
-    private final String CHAT_URL="http://192.168.91.236:3000/";
+    private final String CHAT_URL="http://192.168.88.61:3000/";
     private Socket mSocket;
     {
         try {
+            System.out.println("ffff");
             mSocket= IO.socket(CHAT_URL);
         } catch (URISyntaxException e) {
+            System.out.println("gggg");
             e.printStackTrace();
         }
     }
