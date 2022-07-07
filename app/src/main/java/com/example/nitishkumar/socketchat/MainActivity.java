@@ -27,8 +27,10 @@ import android.widget.TextView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -54,12 +56,22 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        String vhost;
+
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
         getSupportActionBar().setTitle(null);
         isConnected=false;
         mTyping=false;
-        app=new ChatApp();
+        Bundle host = getIntent().getExtras();
+        System.out.println(host.getString("host"));
+        if(host != null){
+            vhost = host.getString("host").trim();
+            app=new ChatApp();
+            app.setUrl(vhost);
+        }
+
         initializeSocket();
         signIn();
         setUpUI();
@@ -344,8 +356,26 @@ public class MainActivity extends AppCompatActivity {
         editMessage.setText("");
         addMessage(mUsername, message,Message.TYPE_MESSAGE_SENT);
 
-        mSocket.emit("Get Modulus", message);
+//        mSocket.emit("get modulus", message);
 
+//        mSocket.on("send modulus", new Emitter.Listener() {
+//            @Override
+//            public void call(final Object... args) {
+//                Log.w(TAG,"onSendMod");
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        Scanner scanner;
+//                        for(scanner = new Scanner(new File("E:\\IKP\\ta\\SID\\" + userName + "_" + t + ".txt")); scanner.hasNextLine(); scrt = scanner.nextLine()) {
+//                        }
+//
+//                        String text = message.substring(message.indexOf(")") + 1, clientMessage.length());
+//                        String[] Message = RabinCryptosystem.enc(text, scrt, n);
+//                        this.server.privatebr("(secured)" + Message[0], t);
+//                    }
+//                });
+//            }
+//        });
         // perform the sending message attempt.
         mSocket.emit("new message", message);
     }

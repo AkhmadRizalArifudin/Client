@@ -57,6 +57,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         mSocket.off("login",onLogin);
+        mSocket.off("cred",onCred);
         mSocket.off(Socket.EVENT_CONNECT,onConnect);
     }
 
@@ -65,6 +66,7 @@ public class LoginActivity extends AppCompatActivity {
         String password=mPasswordEditText.getText().toString().trim();
         AssetManager assetManager = getAssets();
 
+//        System.out.println("brr");
         if(TextUtils.isEmpty(username)){
             Snackbar.make(v,"Enter username",Snackbar.LENGTH_SHORT).show();
             mUsernameEditText.requestFocus();
@@ -79,7 +81,7 @@ public class LoginActivity extends AppCompatActivity {
         mUsername=username;
         mPassword=password;
         mSocket.connect();
-
+//        System.out.println("drr");
     }
 
     private Emitter.Listener onConnect=new Emitter.Listener() {
@@ -123,7 +125,7 @@ public class LoginActivity extends AppCompatActivity {
         }
     };
 
-    private Emitter.Listener onCred=new Emitter.Listener() {
+    private Emitter.Listener onCred = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
             JSONObject data= (JSONObject) args[0];
@@ -166,6 +168,7 @@ public class LoginActivity extends AppCompatActivity {
 //            i.putExtra("CN",mUsername);
 //            i.putExtra("numUsers",numUsers);
 //            setResult(RESULT_OK,i);
+            System.out.println("crr");
             mSocket.emit("validate",cek);
 //            finish();
         }
@@ -181,6 +184,7 @@ public class LoginActivity extends AppCompatActivity {
             }catch (JSONException e){
                 e.printStackTrace();
             }
+//            System.out.println("arh");
             Intent i=new Intent();
             i.putExtra("username",mUsername);
             i.putExtra("numUsers",numUsers);

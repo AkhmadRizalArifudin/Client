@@ -12,12 +12,23 @@ import io.socket.client.Socket;
  */
 
 public class ChatApp extends Application {
-    private final String CHAT_URL="http://192.168.91.236:3000/";
+    private String CHAT_URL = "";//="http://192.168.94.54:3000/";
+
+//    public ChatApp (String host){
+//        this.CHAT_URL = "http://"+host+":3000/";
+//    }
+
+    public void setUrl(String host){
+        this.CHAT_URL += "http://"+host+":3000/";
+    }
+
     private Socket mSocket;
     {
         try {
-            mSocket= IO.socket(CHAT_URL);
+            System.out.println(this.CHAT_URL);
+            mSocket= IO.socket(this.CHAT_URL);
         } catch (URISyntaxException e) {
+            System.out.println("gggg");
             e.printStackTrace();
         }
     }
