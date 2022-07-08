@@ -263,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     JSONObject data = (JSONObject) args[0];
                     JSONArray datas;
-
+                    userList = new ArrayList<>();
                     try {
                         datas = data.getJSONArray("user");
                         for (int i=0;i<datas.length();i++){
@@ -293,13 +293,13 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     JSONObject data = (JSONObject) args[0];
                     String username=null;
-                    JSONArray datas;
+//                    JSONArray datas;
                     int numUsers;
                     try {
                         username = data.getString("username");
                         numUsers = data.getInt("numUsers");
-                        datas = data.getJSONArray("users");
-                        System.out.println(datas);
+//                        datas = data.getJSONArray("users");
+//                        System.out.println(datas);
                     } catch (JSONException e) {
                         Log.e(TAG, e.getMessage());
                         return;
@@ -385,6 +385,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addUser(String id, String username){
+//        userList = new ArrayList<>();
         userList.add(new User(id, username));
         System.out.println(userList);
 //        uAdapter.notifyItemInserted(userList.size()-1);
