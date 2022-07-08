@@ -91,12 +91,12 @@ public class MainActivity extends AppCompatActivity {
         System.out.println(mSocket);
         mSocket.on(Socket.EVENT_DISCONNECT,onDisconnect);
         mSocket.on(Socket.EVENT_CONNECT_ERROR,onConnectError);
+        mSocket.on("user update",onUpdateUser);
         mSocket.on("user joined",onUserJoined);
         mSocket.on("user left",onUserLeft);
         mSocket.on("new message",onNewMessage);
         mSocket.on("typing",onTyping);
         mSocket.on("stop typing",onStopTyping);
-        mSocket.on("user update",onUpdateUser);
     }
 
     //sign request ke loginactivity
@@ -171,6 +171,8 @@ public class MainActivity extends AppCompatActivity {
         reqButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+
                 Intent contact=new Intent(MainActivity.this, Home.class);
                 contact.putExtra("users",(Serializable) userList);
                 startActivity(contact);
@@ -260,30 +262,22 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     JSONObject data = (JSONObject) args[0];
-                    String datas=null;
-//                    String id=null;
-//                    int numUsers;
-                    ArrayList<User> users= new ArrayList<>();
+                    JSONArray datas;
+
                     try {
-                        datas = data.getString("user");
-                        System.out.println("hm");
-                        System.out.println(datas);
-//                        numUsers = data.getInt("numUsers");
-//                        id = data.getString("userID");
-//                        final ObjectMapper objectMapper = new ObjectMapper();
-//                        List<User> langList = objectMapper.readValue(datas, new TypeReference<List<User>>(){});
-//                        for (int i=0;i<datas.length();i++){
-//                            users.add(datas.get(i));
-//                        }
-//                        users.add((User)datas);
+                        datas = data.getJSONArray("user");
+                        for (int i=0;i<datas.length();i++){
+                            JSONObject temp = (JSONObject) datas.get(i);
+                            String id = temp.getString("userID");
+                            String username = temp.getString("username");
+                            addUser(id,username);
+                        }
+
                     } catch (JSONException e) {
                         Log.e(TAG, e.getMessage());
                         return;
                     }
-//                    System.out.println(id);
-//                    addUser(users);
-//                    addLog(username+" has joined");
-//                    addParticipantsLog(numUsers);
+//
                 }
             });
         }
@@ -299,18 +293,17 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     JSONObject data = (JSONObject) args[0];
                     String username=null;
-//                    String id=null;
+                    JSONArray datas;
                     int numUsers;
                     try {
                         username = data.getString("username");
                         numUsers = data.getInt("numUsers");
-//                        id = data.getString("userID");
+                        datas = data.getJSONArray("users");
+                        System.out.println(datas);
                     } catch (JSONException e) {
                         Log.e(TAG, e.getMessage());
                         return;
                     }
-//                    System.out.println(id);
-//                    addUser(id, username);
                     addLog(username+" has joined");
                     addParticipantsLog(numUsers);
                 }
