@@ -4,6 +4,10 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Handler;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
@@ -23,11 +27,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 
-
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -39,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private EditText editMessage;
 
     private Button sendButton;
+    private FloatingActionButton reqButton;
     public static Socket mSocket;
     private ChatApp app;
     private boolean mTyping;
@@ -48,7 +54,9 @@ public class MainActivity extends AppCompatActivity {
     private String TAG="-->>";
     private RecyclerView recyclerView;
     private MessageAdapter mAdapter;
+    private UserAdapter uAdapter;
     private List<Message>messageList;
+    private List<User>userList = new ArrayList<>();
     private static final int TIMER=500;
     private static final int REQUEST_CODE=0;
     private Handler typingHandler=new Handler();
@@ -65,11 +73,12 @@ public class MainActivity extends AppCompatActivity {
         isConnected=false;
         mTyping=false;
         Bundle host = getIntent().getExtras();
-        System.out.println(host.getString("host"));
+        System.out.println(host.getString("host").trim());
         if(host != null){
             vhost = host.getString("host").trim();
-            app=new ChatApp();
-            app.setUrl(vhost);
+//            app=new ChatApp(vhost);
+            mSocket = ChatApp.main(vhost);
+//            app.setHost(vhost);
         }
 
         initializeSocket();
@@ -78,8 +87,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void initializeSocket(){
-        mSocket=app.getSocket();
-
+//        mSocket=app.getSocket();
+        System.out.println(mSocket);
         mSocket.on(Socket.EVENT_DISCONNECT,onDisconnect);
         mSocket.on(Socket.EVENT_CONNECT_ERROR,onConnectError);
         mSocket.on("user joined",onUserJoined);
@@ -87,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
         mSocket.on("new message",onNewMessage);
         mSocket.on("typing",onTyping);
         mSocket.on("stop typing",onStopTyping);
+        mSocket.on("user update",onUpdateUser);
     }
 
     //sign request ke loginactivity
@@ -122,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
         editMessage=(EditText)findViewById(R.id.editMessage);
         typingView=findViewById(R.id.typing);
         sendButton=(Button)findViewById(R.id.sendButton);
+        reqButton=(FloatingActionButton)findViewById(R.id.btnrequest);
 
         editMessage.addTextChangedListener(new TextWatcher() {
             @Override
@@ -156,6 +167,16 @@ public class MainActivity extends AppCompatActivity {
                 attemptSend();
             }
         });
+
+        reqButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent contact=new Intent(MainActivity.this, Home.class);
+                contact.putExtra("users",(Serializable) userList);
+                startActivity(contact);
+//                finish();
+            }
+        });
     }
 
     @Override
@@ -174,6 +195,7 @@ public class MainActivity extends AppCompatActivity {
         mSocket.off("new message",onNewMessage);
         mSocket.off("typing",onTyping);
         mSocket.off("stop typing",onStopTyping);
+        mSocket.off("user update",onUpdateUser);
 
         mTyping=false;
 
@@ -229,6 +251,44 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private Emitter.Listener onUpdateUser = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            Log.w(TAG,"onUpdateUser");
+            runOnUiThread(new Runnable() {
+                @SuppressLint("StringFormatInvalid")
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    String datas=null;
+//                    String id=null;
+//                    int numUsers;
+                    ArrayList<User> users= new ArrayList<>();
+                    try {
+                        datas = data.getString("user");
+                        System.out.println("hm");
+                        System.out.println(datas);
+//                        numUsers = data.getInt("numUsers");
+//                        id = data.getString("userID");
+//                        final ObjectMapper objectMapper = new ObjectMapper();
+//                        List<User> langList = objectMapper.readValue(datas, new TypeReference<List<User>>(){});
+//                        for (int i=0;i<datas.length();i++){
+//                            users.add(datas.get(i));
+//                        }
+//                        users.add((User)datas);
+                    } catch (JSONException e) {
+                        Log.e(TAG, e.getMessage());
+                        return;
+                    }
+//                    System.out.println(id);
+//                    addUser(users);
+//                    addLog(username+" has joined");
+//                    addParticipantsLog(numUsers);
+                }
+            });
+        }
+    };
+
     private Emitter.Listener onUserJoined = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
@@ -239,15 +299,18 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     JSONObject data = (JSONObject) args[0];
                     String username=null;
+//                    String id=null;
                     int numUsers;
                     try {
                         username = data.getString("username");
                         numUsers = data.getInt("numUsers");
+//                        id = data.getString("userID");
                     } catch (JSONException e) {
                         Log.e(TAG, e.getMessage());
                         return;
                     }
-
+//                    System.out.println(id);
+//                    addUser(id, username);
                     addLog(username+" has joined");
                     addParticipantsLog(numUsers);
                 }
@@ -327,6 +390,14 @@ public class MainActivity extends AppCompatActivity {
         mAdapter.notifyItemInserted(messageList.size()-1);
         scrollUp();
     }
+
+    private void addUser(String id, String username){
+        userList.add(new User(id, username));
+        System.out.println(userList);
+//        uAdapter.notifyItemInserted(userList.size()-1);
+        scrollUp();
+    }
+
     private void addParticipantsLog(int numUsers) {
         addLog("There are "+numUsers+" users in the chat room");
         scrollUp();

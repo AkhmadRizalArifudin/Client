@@ -141,7 +141,6 @@ public class LoginActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            //TODO read CN as hiden input trus up ke server buat validate
             InputStream input;
             Boolean cek = false;
             try {
