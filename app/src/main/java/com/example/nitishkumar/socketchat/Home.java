@@ -6,6 +6,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -26,6 +28,7 @@ public class Home extends AppCompatActivity {
     private RecyclerView userView;
     private UserAdapter uAdapter;
     private ArrayList<User> userList =new ArrayList<>();
+    private ArrayList<User> target =new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,12 +45,19 @@ public class Home extends AppCompatActivity {
         UserAdapter listUserAdapter = new UserAdapter(userList);
         userView.setAdapter(listUserAdapter);
 
-        setActionBarTitle("Online Users");
+//        target = listUserAdapter.getTarget();
+
+//        Intent v=new Intent();
+//        v.putExtra("targetID",target.get(0).getID());
+//        v.putExtra("targetName",target.get(0).getUser());
+//        setResult(RESULT_OK,v);
+//        finish();
+//        setActionBarTitle("Online Users");
     }
 
-    private void setActionBarTitle(String title) {
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(title);
-        }
-    }
+//    private void setActionBarTitle(String title) {
+//        if (getSupportActionBar() != null) {
+//            getSupportActionBar().setTitle(title);
+//        }
+//    }
 }

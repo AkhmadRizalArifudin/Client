@@ -40,91 +40,77 @@ import java.util.Scanner;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
-public class MainActivity extends AppCompatActivity {
-    private EditText editMessage;
+public class PrivateMessage extends AppCompatActivity {
+    private EditText editPMessage;
 
-    private Button sendButton;
-    private FloatingActionButton reqButton;
+    private Button sendPButton;
+//    private FloatingActionButton reqButton;
     public static Socket mSocket;
     private ChatApp app;
     private boolean mTyping;
     private String mUsername;
-    private String self;
+//    private String self;
     TextView typingView;
+    TextView targetName;
     private Boolean isConnected;
     private String TAG="-->>";
-    private RecyclerView recyclerView;
+    private RecyclerView privateView;
     private MessageAdapter mAdapter;
     private UserAdapter uAdapter;
     private List<Message>messageList;
-    private List<User>userList = new ArrayList<>();
+//    private List<User>userList = new ArrayList<>();
     private List<User>target = new ArrayList<>();
     private static final int TIMER=500;
-    private static final int LOGIN_CODE=0;
-    private static final int HOME_CODE=1;
     private Handler typingHandler=new Handler();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_private_message);
 
-        String vhost;
-
-        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        setSupportActionBar(myToolbar);
-        getSupportActionBar().setTitle(null);
+//        String vhost;
+//
+//        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+//        setSupportActionBar(myToolbar);
+//        getSupportActionBar().setTitle(null);
         isConnected=false;
         mTyping=false;
-        Bundle host = getIntent().getExtras();
-        System.out.println(host.getString("host").trim());
-        if(host != null){
-            vhost = host.getString("host").trim();
-//            app=new ChatApp(vhost);
-            mSocket = ChatApp.main(vhost);
-//            app.setHost(vhost);
-        }
-
+        Intent i = getIntent();
+        target = (ArrayList<User>) i.getSerializableExtra("target");
         initializeSocket();
-        signIn();
         setUpUI();
     }
 
     public void initializeSocket(){
-//        mSocket=app.getSocket();
-        System.out.println(mSocket);
+        mSocket=ChatApp.getSocket();
         mSocket.on(Socket.EVENT_DISCONNECT,onDisconnect);
         mSocket.on(Socket.EVENT_CONNECT_ERROR,onConnectError);
-        mSocket.on("user update",onUpdateUser);
+//        mSocket.on("user update",onUpdateUser);
         mSocket.on("user joined",onUserJoined);
         mSocket.on("user left",onUserLeft);
-        mSocket.on("new message",onNewMessage);
+        mSocket.on("private message",onNewMessage);
         mSocket.on("typing",onTyping);
         mSocket.on("stop typing",onStopTyping);
     }
 
-    //sign request ke loginactivity
-    private void signIn(){
-        mUsername=null;
-        Intent i=new Intent(this,LoginActivity.class);
-        startActivityForResult(i,LOGIN_CODE);
-    }
 
     //result login diproses
 
     public void setUpUI(){
         messageList=new ArrayList<>();
-        recyclerView=(RecyclerView)findViewById(R.id.recycler_view);
+        privateView=(RecyclerView)findViewById(R.id.private_view);
         mAdapter=new MessageAdapter(messageList);
         RecyclerView.LayoutManager layoutManager=new LinearLayoutManager(getApplicationContext());
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.setAdapter(mAdapter);
-        editMessage=(EditText)findViewById(R.id.editMessage);
-        typingView=findViewById(R.id.typing);
-        sendButton=(Button)findViewById(R.id.sendButton);
-        reqButton=(FloatingActionButton)findViewById(R.id.btnrequest);
-
-        editMessage.addTextChangedListener(new TextWatcher() {
+        privateView.setLayoutManager(layoutManager);
+        privateView.setItemAnimator(new DefaultItemAnimator());
+        privateView.setAdapter(mAdapter);
+        editPMessage=(EditText)findViewById(R.id.editPMessage);
+        typingView=findViewById(R.id.status);
+        sendPButton=(Button)findViewById(R.id.sendPButton);
+//        reqButton=(FloatingActionButton)findViewById(R.id.btnrequest);
+        targetName=(TextView)findViewById(R.id.target_name);
+        targetName.setText(target.get(0).getUser());
+//
+        editPMessage.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
@@ -136,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 if(!mSocket.connected())
                     return;
-                if(TextUtils.isEmpty(editMessage.getText()))
+                if(TextUtils.isEmpty(editPMessage.getText()))
                     return;
                 if(mTyping==false) {
                     mTyping = true;
@@ -151,55 +137,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        sendButton.setOnClickListener(new View.OnClickListener() {
+        sendPButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptSend();
             }
         });
-
-        reqButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-
-                Intent contact=new Intent(MainActivity.this, Home.class);
-                contact.putExtra("users",(Serializable) userList);
-                startActivityForResult(contact, HOME_CODE);
-//                finish();
-            }
-        });
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == LOGIN_CODE) {
-            if (resultCode != Activity.RESULT_OK) {
-                finish();
-                return;
-            }
-            isConnected = true;
-            Snackbar.make(findViewById(android.R.id.content), "Welcome to Socket Chat", Snackbar.LENGTH_SHORT).show();
-            mUsername = data.getStringExtra("username");
-            int numUsers = data.getIntExtra("numUsers", 1);
-            addParticipantsLog(numUsers);
-        }else if(requestCode == HOME_CODE){
-            if (resultCode != Activity.RESULT_OK) {
-//                finish();
-                return;
-            }
-            System.out.println("target:");
-            target = new ArrayList<>();
-            target.add(new User(data.getStringExtra("targetID"),data.getStringExtra("targetName")));
-            System.out.println(target);
-            Intent privatepage=new Intent(MainActivity.this, PrivateMessage.class);
-            privatepage.putExtra("target",(Serializable) target);
-//            privatepage.putExtra("targetID",target.get(0).getID());
-//            privatepage.putExtra("targetName",target.get(0).getUser());
-            startActivity(privatepage);
-        }
-    }
+
 
     @Override
     protected void onDestroy() {
@@ -214,10 +160,10 @@ public class MainActivity extends AppCompatActivity {
         mSocket.off(Socket.EVENT_CONNECT_ERROR,onConnectError);
         mSocket.off("user joined",onUserJoined);
         mSocket.off("user left",onUserLeft);
-        mSocket.off("new message",onNewMessage);
+        mSocket.off("private message",onNewMessage);
         mSocket.off("typing",onTyping);
         mSocket.off("stop typing",onStopTyping);
-        mSocket.off("user update",onUpdateUser);
+//        mSocket.off("user update",onUpdateUser);
 
         mTyping=false;
 
@@ -260,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
                     String username=null;
                     String message=null;
                     try {
-                        username=data.getString("username");
+                        username=data.getString("from");
                         message=data.getString("message");
                     } catch (JSONException e) {
                         Log.e(TAG,e.getMessage());
@@ -273,56 +219,56 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private Emitter.Listener onUpdateUser = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            Log.w(TAG,"onUpdateUser");
-            runOnUiThread(new Runnable() {
-                @SuppressLint("StringFormatInvalid")
-                @Override
-                public void run() {
-                    JSONObject data = (JSONObject) args[0];
-                    JSONArray datas;
-                    userList = new ArrayList<>();
-                    try {
-                        datas = data.getJSONArray("user");
-                        try{
-                            self = data.getString("self");
-                            for (int i=0;i<datas.length();i++){
-                                JSONObject temp = (JSONObject) datas.get(i);
-                                String id = temp.getString("userID");
-                                String username = temp.getString("username");
-//                            System.out.println(self);
-//                            System.out.println(username);
-//                            System.out.println(username.trim());
-                                if(!username.trim().equals(self.trim())){
-                                    addUser(id,username);
-                                }
-                            }
-                        }catch (Exception e){
-                            for (int i=0;i<datas.length();i++){
-                                JSONObject temp = (JSONObject) datas.get(i);
-                                String id = temp.getString("userID");
-                                String username = temp.getString("username");
-
-                                if(!username.trim().equals(self.trim())){
-                                    addUser(id,username);
-                                }
-
-                            }
-                        }
-
-//                        System.out.println(self);
-                        System.out.println(userList);
-                    } catch (JSONException e) {
-                        Log.e(TAG, e.getMessage());
-                        return;
-                    }
+//    private Emitter.Listener onUpdateUser = new Emitter.Listener() {
+//        @Override
+//        public void call(final Object... args) {
+//            Log.w(TAG,"onUpdateUser");
+//            runOnUiThread(new Runnable() {
+//                @SuppressLint("StringFormatInvalid")
+//                @Override
+//                public void run() {
+//                    JSONObject data = (JSONObject) args[0];
+//                    JSONArray datas;
+//                    userList = new ArrayList<>();
+//                    try {
+//                        datas = data.getJSONArray("user");
+//                        try{
+//                            self = data.getString("self");
+//                            for (int i=0;i<datas.length();i++){
+//                                JSONObject temp = (JSONObject) datas.get(i);
+//                                String id = temp.getString("userID");
+//                                String username = temp.getString("username");
+////                            System.out.println(self);
+////                            System.out.println(username);
+////                            System.out.println(username.trim());
+//                                if(!username.trim().equals(self.trim())){
+//                                    addUser(id,username);
+//                                }
+//                            }
+//                        }catch (Exception e){
+//                            for (int i=0;i<datas.length();i++){
+//                                JSONObject temp = (JSONObject) datas.get(i);
+//                                String id = temp.getString("userID");
+//                                String username = temp.getString("username");
 //
-                }
-            });
-        }
-    };
+//                                if(!username.trim().equals(self.trim())){
+//                                    addUser(id,username);
+//                                }
+//
+//                            }
+//                        }
+//
+////                        System.out.println(self);
+//                        System.out.println(userList);
+//                    } catch (JSONException e) {
+//                        Log.e(TAG, e.getMessage());
+//                        return;
+//                    }
+////
+//                }
+//            });
+//        }
+//    };
 
     private Emitter.Listener onUserJoined = new Emitter.Listener() {
         @Override
@@ -425,13 +371,13 @@ public class MainActivity extends AppCompatActivity {
         scrollUp();
     }
 
-    private void addUser(String id, String username){
-//        userList = new ArrayList<>();
-        userList.add(new User(id, username));
-        System.out.println(userList);
-//        uAdapter.notifyItemInserted(userList.size()-1);
-        scrollUp();
-    }
+//    private void addUser(String id, String username){
+////        userList = new ArrayList<>();
+//        userList.add(new User(id, username));
+//        System.out.println(userList);
+////        uAdapter.notifyItemInserted(userList.size()-1);
+//        scrollUp();
+//    }
 
     private void addParticipantsLog(int numUsers) {
         addLog("There are "+numUsers+" users in the chat room");
@@ -453,13 +399,13 @@ public class MainActivity extends AppCompatActivity {
             mTyping = false;
             mSocket.emit("stop typing");
         }
-        String message = editMessage.getText().toString().trim();
+        String message = editPMessage.getText().toString().trim();
         if (TextUtils.isEmpty(message)) {
-            editMessage.requestFocus();
+            editPMessage.requestFocus();
             return;
         }
 
-        editMessage.setText("");
+        editPMessage.setText("");
         addMessage(mUsername, message,Message.TYPE_MESSAGE_SENT);
 
 //        mSocket.emit("get modulus", message);
@@ -497,7 +443,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
     private void scrollUp(){
-        recyclerView.scrollToPosition(mAdapter.getItemCount()-1);
+        privateView.scrollToPosition(mAdapter.getItemCount()-1);
     }
 
     @Override
