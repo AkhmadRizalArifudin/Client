@@ -81,6 +81,7 @@ public class LoginActivity extends AppCompatActivity {
         mUsername=username;
         mPassword=password;
         mSocket.connect();
+
 //        System.out.println("drr");
     }
 
@@ -187,6 +188,7 @@ public class LoginActivity extends AppCompatActivity {
             Intent i=new Intent();
             i.putExtra("username",mUsername);
             i.putExtra("numUsers",numUsers);
+//            i.putExtra("id",mSo);
             setResult(RESULT_OK,i);
             finish();
         }

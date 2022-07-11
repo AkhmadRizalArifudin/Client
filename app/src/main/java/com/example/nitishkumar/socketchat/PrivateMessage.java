@@ -429,7 +429,17 @@ public class PrivateMessage extends AppCompatActivity {
 //            }
 //        });
         // perform the sending message attempt.
-        mSocket.emit("new message", message);
+        JSONObject messageDetails = new JSONObject();
+        try {
+            messageDetails.put("from", mSocket.id());
+            messageDetails.put("message", message);
+            messageDetails.put("to", target.get(0).getID());
+        } catch (JSONException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        mSocket.emit("private message", messageDetails);
     }
 
     private Runnable onTypingTimeout=new Runnable() {
