@@ -195,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
             System.out.println(target);
             Intent privatepage=new Intent(MainActivity.this, PrivateMessage.class);
             privatepage.putExtra("target",(Serializable) target);
-//            privatepage.putExtra("targetID",target.get(0).getID());
+            privatepage.putExtra("me",mUsername);
 //            privatepage.putExtra("targetName",target.get(0).getUser());
             startActivity(privatepage);
         }

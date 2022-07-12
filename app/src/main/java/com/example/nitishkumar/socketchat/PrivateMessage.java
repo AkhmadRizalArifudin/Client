@@ -76,6 +76,7 @@ public class PrivateMessage extends AppCompatActivity {
         mTyping=false;
         Intent i = getIntent();
         target = (ArrayList<User>) i.getSerializableExtra("target");
+        mUsername = i.getStringExtra("me");
         initializeSocket();
         setUpUI();
     }
@@ -140,6 +141,7 @@ public class PrivateMessage extends AppCompatActivity {
         sendPButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                System.out.println("send button clicked");
                 attemptSend();
             }
         });
@@ -367,7 +369,9 @@ public class PrivateMessage extends AppCompatActivity {
 
     private void addMessage(String username,String message, int messageType){
         messageList.add(new Message(messageType,username,message));
-        mAdapter.notifyItemInserted(messageList.size()-1);
+        System.out.print("private: ");
+        System.out.println(messageList.size());
+        mAdapter.notifyItemInserted(messageList.size()+1);
         scrollUp();
     }
 
@@ -394,16 +398,20 @@ public class PrivateMessage extends AppCompatActivity {
 
     private void attemptSend() {
         if (mUsername==null) return;
+        System.out.println("a");
         if (!mSocket.connected()) return;
+        System.out.println("b");
         if(mTyping) {
             mTyping = false;
             mSocket.emit("stop typing");
         }
+        System.out.println("c");
         String message = editPMessage.getText().toString().trim();
         if (TextUtils.isEmpty(message)) {
             editPMessage.requestFocus();
             return;
         }
+        System.out.println("b");
 
         editPMessage.setText("");
         addMessage(mUsername, message,Message.TYPE_MESSAGE_SENT);
@@ -456,26 +464,26 @@ public class PrivateMessage extends AppCompatActivity {
         privateView.scrollToPosition(mAdapter.getItemCount()-1);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_activity_menu,menu);
-        return true;
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        getMenuInflater().inflate(R.menu.main_activity_menu,menu);
+//        return true;
+//    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.logout:
-                logout();
-        }
-        return super.onOptionsItemSelected(item);
-    }
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        switch (item.getItemId()){
+//            case R.id.logout:
+//                logout();
+//        }
+//        return super.onOptionsItemSelected(item);
+//    }
 
-    private void logout() {
-        mSocket.disconnect();
-        isConnected=false;
-        mTyping=false;
-        messageList.clear();
-        this.recreate();
-    }
+//    private void logout() {
+//        mSocket.disconnect();
+//        isConnected=false;
+//        mTyping=false;
+//        messageList.clear();
+//        this.recreate();
+//    }
 }

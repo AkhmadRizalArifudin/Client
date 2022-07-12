@@ -41,6 +41,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MyViewHo
     public void onBindViewHolder(MessageAdapter.MyViewHolder holder, int position) {
         Message currentMessage=mMessageList.get(position);
         if(currentMessage.getmUsername()!=null) {
+            System.out.print("adapter: ");
+            System.out.println(position);
             if (currentMessage.getmUsername().equals(mMessageList.get(position - 1).getmUsername())) {
                 LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                 textParams.setMargins(0, 4, 0, 0);
