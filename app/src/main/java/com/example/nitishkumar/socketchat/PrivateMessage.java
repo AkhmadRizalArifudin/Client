@@ -76,18 +76,20 @@ public class PrivateMessage extends AppCompatActivity {
         mTyping=false;
         Intent i = getIntent();
         target = (ArrayList<User>) i.getSerializableExtra("target");
+        mUsername = i.getStringExtra("me");
         initializeSocket();
         setUpUI();
     }
 
     public void initializeSocket(){
         mSocket=ChatApp.getSocket();
+//        mSocket.connect();
         mSocket.on(Socket.EVENT_DISCONNECT,onDisconnect);
         mSocket.on(Socket.EVENT_CONNECT_ERROR,onConnectError);
 //        mSocket.on("user update",onUpdateUser);
-        mSocket.on("user joined",onUserJoined);
-        mSocket.on("user left",onUserLeft);
-        mSocket.on("private message",onNewMessage);
+//        mSocket.on("user joined",onUserJoined);
+//        mSocket.on("user left",onUserLeft);
+        mSocket.on("private message",onPrivateMessage);
         mSocket.on("typing",onTyping);
         mSocket.on("stop typing",onStopTyping);
     }
@@ -140,6 +142,7 @@ public class PrivateMessage extends AppCompatActivity {
         sendPButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                System.out.println("send button clicked");
                 attemptSend();
             }
         });
@@ -158,9 +161,9 @@ public class PrivateMessage extends AppCompatActivity {
 
         mSocket.off(Socket.EVENT_DISCONNECT,onDisconnect);
         mSocket.off(Socket.EVENT_CONNECT_ERROR,onConnectError);
-        mSocket.off("user joined",onUserJoined);
-        mSocket.off("user left",onUserLeft);
-        mSocket.off("private message",onNewMessage);
+//        mSocket.off("user joined",onUserJoined);
+//        mSocket.off("user left",onUserLeft);
+        mSocket.off("private message",onPrivateMessage);
         mSocket.off("typing",onTyping);
         mSocket.off("stop typing",onStopTyping);
 //        mSocket.off("user update",onUpdateUser);
@@ -195,7 +198,7 @@ public class PrivateMessage extends AppCompatActivity {
         }
     };
 
-    private Emitter.Listener onNewMessage = new Emitter.Listener() {
+    private Emitter.Listener onPrivateMessage = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
             Log.w(TAG,"onNewMesage");
@@ -212,8 +215,10 @@ public class PrivateMessage extends AppCompatActivity {
                         Log.e(TAG,e.getMessage());
                         e.printStackTrace();
                     }
+                    if(username.equals(target.get(0).getUser().trim())){
+                        addMessage(username,message,Message.TYPE_MESSAGE_RECEIVED);
+                    }
 
-                    addMessage(username,message,Message.TYPE_MESSAGE_RECEIVED);
                 }
             });
         }
@@ -270,60 +275,60 @@ public class PrivateMessage extends AppCompatActivity {
 //        }
 //    };
 
-    private Emitter.Listener onUserJoined = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            Log.w(TAG,"onUserJoined");
-            runOnUiThread(new Runnable() {
-                @SuppressLint("StringFormatInvalid")
-                @Override
-                public void run() {
-                    JSONObject data = (JSONObject) args[0];
-                    String username=null;
-//                    JSONArray datas;
-                    int numUsers;
-                    try {
-                        username = data.getString("username");
-                        numUsers = data.getInt("numUsers");
-//                        datas = data.getJSONArray("users");
-//                        System.out.println(datas);
-                    } catch (JSONException e) {
-                        Log.e(TAG, e.getMessage());
-                        return;
-                    }
-                    addLog(username+" has joined");
-                    addParticipantsLog(numUsers);
-                }
-            });
-        }
-    };
-
-    private Emitter.Listener onUserLeft = new Emitter.Listener() {
-        @Override
-        public void call(final Object... args) {
-            Log.w(TAG,"onUserLeft");
-            runOnUiThread(new Runnable() {
-                @SuppressLint("StringFormatInvalid")
-                @Override
-                public void run() {
-                    JSONObject data = (JSONObject) args[0];
-                    String username;
-                    int numUsers;
-                    try {
-                        username = data.getString("username");
-                        numUsers = data.getInt("numUsers");
-                    } catch (JSONException e) {
-                        Log.e(TAG, e.getMessage());
-                        return;
-                    }
-
-                    addLog(username+" left");
-                    addParticipantsLog(numUsers);
-                    removeTyping();
-                }
-            });
-        }
-    };
+//    private Emitter.Listener onUserJoined = new Emitter.Listener() {
+//        @Override
+//        public void call(final Object... args) {
+//            Log.w(TAG,"onUserJoined");
+//            runOnUiThread(new Runnable() {
+//                @SuppressLint("StringFormatInvalid")
+//                @Override
+//                public void run() {
+//                    JSONObject data = (JSONObject) args[0];
+//                    String username=null;
+////                    JSONArray datas;
+//                    int numUsers;
+//                    try {
+//                        username = data.getString("username");
+//                        numUsers = data.getInt("numUsers");
+////                        datas = data.getJSONArray("users");
+////                        System.out.println(datas);
+//                    } catch (JSONException e) {
+//                        Log.e(TAG, e.getMessage());
+//                        return;
+//                    }
+//                    addLog(username+" has joined");
+//                    addParticipantsLog(numUsers);
+//                }
+//            });
+//        }
+//    };
+//
+//    private Emitter.Listener onUserLeft = new Emitter.Listener() {
+//        @Override
+//        public void call(final Object... args) {
+//            Log.w(TAG,"onUserLeft");
+//            runOnUiThread(new Runnable() {
+//                @SuppressLint("StringFormatInvalid")
+//                @Override
+//                public void run() {
+//                    JSONObject data = (JSONObject) args[0];
+//                    String username;
+//                    int numUsers;
+//                    try {
+//                        username = data.getString("username");
+//                        numUsers = data.getInt("numUsers");
+//                    } catch (JSONException e) {
+//                        Log.e(TAG, e.getMessage());
+//                        return;
+//                    }
+//
+//                    addLog(username+" left");
+//                    addParticipantsLog(numUsers);
+//                    removeTyping();
+//                }
+//            });
+//        }
+//    };
 
     private Emitter.Listener onTyping = new Emitter.Listener() {
         @Override
@@ -340,7 +345,10 @@ public class PrivateMessage extends AppCompatActivity {
                         Log.e(TAG, e.getMessage());
                         return;
                     }
-                    addTyping(username);
+
+                    if(username.equals(target.get(0).getUser())) {
+                        addTyping(username);
+                    }
                 }
             });
         }
@@ -353,7 +361,17 @@ public class PrivateMessage extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    removeTyping();
+                    JSONObject data = (JSONObject) args[0];
+                    String username;
+                    try{
+                        username = data.getString("username");
+                    }catch (JSONException e){
+                        Log.e(TAG, e.getMessage());
+                        return;
+                    }
+                    if(!username.equals(target.get(0).getUser())) {
+                        removeTyping();
+                    }
                 }
             });
         }
@@ -367,7 +385,7 @@ public class PrivateMessage extends AppCompatActivity {
 
     private void addMessage(String username,String message, int messageType){
         messageList.add(new Message(messageType,username,message));
-        mAdapter.notifyItemInserted(messageList.size()-1);
+        mAdapter.notifyItemInserted(messageList.size()+1);
         scrollUp();
     }
 
@@ -393,12 +411,16 @@ public class PrivateMessage extends AppCompatActivity {
     }
 
     private void attemptSend() {
+        System.out.println("a");
         if (mUsername==null) return;
+        System.out.println("b");
         if (!mSocket.connected()) return;
+        System.out.println("c");
         if(mTyping) {
             mTyping = false;
             mSocket.emit("stop typing");
         }
+        System.out.println("d");
         String message = editPMessage.getText().toString().trim();
         if (TextUtils.isEmpty(message)) {
             editPMessage.requestFocus();
@@ -456,26 +478,26 @@ public class PrivateMessage extends AppCompatActivity {
         privateView.scrollToPosition(mAdapter.getItemCount()-1);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_activity_menu,menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.logout:
-                logout();
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void logout() {
-        mSocket.disconnect();
-        isConnected=false;
-        mTyping=false;
-        messageList.clear();
-        this.recreate();
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        getMenuInflater().inflate(R.menu.main_activity_menu,menu);
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        switch (item.getItemId()){
+//            case R.id.logout:
+//                logout();
+//        }
+//        return super.onOptionsItemSelected(item);
+//    }
+//
+//    private void logout() {
+//        mSocket.disconnect();
+//        isConnected=false;
+//        mTyping=false;
+//        messageList.clear();
+//        this.recreate();
+//    }
 }

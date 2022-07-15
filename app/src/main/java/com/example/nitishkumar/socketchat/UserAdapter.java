@@ -5,6 +5,7 @@ import static android.app.Activity.RESULT_OK;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +16,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+
+import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
 
 //import com.bumptech.glide.Glide;
 //import com.bumptech.glide.request.RequestOptions;
@@ -24,6 +31,8 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     private ArrayList<User> listUser = new ArrayList<>();
     public ArrayList<User> targets = new ArrayList<>();
 
+    private String TAG="-->>";
+    public static Socket mSocket;
     public UserAdapter(ArrayList<User> list) {
         this.listUser = list;
     }
@@ -74,6 +83,41 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
                     public void onClick(DialogInterface dialog,int id) {
                         // jika tombol diklik, maka akan menutup activity ini
                         targets.add(target);
+                        mSocket=ChatApp.getSocket();
+                        mSocket.on("scrt", onScrt);
+
+                        Emitter.Listener onScrt = new Emitter.Listener() {
+                            @Override
+                            public void call(final Object... args) {
+                                Log.w(TAG,"onNewMesage");
+                                activity.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        JSONObject data= (JSONObject)args[0];
+                                        String username=null;
+                                        String message=null;
+                                        try {
+                                            username=data.getString("from");
+                                            message=data.getString("message");
+                                        } catch (JSONException e) {
+                                            Log.e(TAG,e.getMessage());
+                                            e.printStackTrace();
+                                        }
+
+                                    }
+                                });
+                            }
+                        };
+
+                        scrt = response.substring(response.indexOf("[") + 1, response.indexOf("]"));
+                        t = response.substring(response.indexOf(")") + 1, response.length());
+                        if (Certificate.verify(t, scrt)) {
+                            System.out.println("\n[server]: " + scrt + " is verified by CA & want to make private conversation with you. Do you agree?");
+                        } else {
+                            System.out.println("\n[server]: " + scrt + " is not verified by CA & want to make private conversation with you. Do you agree?");
+                        }
+
+                        System.out.print("[" + this.client.getUserName() + "]: ");
                         Intent v=new Intent();
                         v.putExtra("targetID",targets.get(0).getID());
                         v.putExtra("targetName",targets.get(0).getUser());
