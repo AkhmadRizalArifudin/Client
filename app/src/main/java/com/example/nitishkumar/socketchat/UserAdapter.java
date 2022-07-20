@@ -80,11 +80,12 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
                     try {
                         //username=data.getString("from");
                         message=data.getString("scrt");
+                        System.out.println(message);
                     } catch (JSONException e) {
                         Log.e(TAG,e.getMessage());
                         e.printStackTrace();
                     }
-                    System.out.println(message);
+
                 }
             });
         }
@@ -92,9 +93,17 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
 
     public void getscrt(){
         mSocket=ChatApp.getSocket();
-
         mSocket.on("scrt", onScrt);
-        mSocket.emit("scrt", "tes");
+
+        JSONObject scrtDetails = new JSONObject();
+        try {
+            scrtDetails.put("cn", User.class.cast(this).getUser());
+            scrtDetails.put("to", targets.get(0).getID());
+        } catch (JSONException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        mSocket.emit("scrt", scrtDetails);
 
 
     }

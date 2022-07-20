@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void initializeSocket(){
 //        mSocket=app.getSocket();
-        System.out.println(mSocket);
+        //System.out.println(mSocket);
         mSocket.on(Socket.EVENT_DISCONNECT,onDisconnect);
         mSocket.on(Socket.EVENT_CONNECT_ERROR,onConnectError);
         mSocket.on("user update",onUpdateUser);
