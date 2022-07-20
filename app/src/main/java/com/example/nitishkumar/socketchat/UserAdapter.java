@@ -67,6 +67,38 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         });
     }
 
+    Emitter.Listener onScrt = new Emitter.Listener() {
+        @Override
+        public void call(final Object... args) {
+            Log.w(TAG,"onNewMesage");
+            mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data= (JSONObject)args[0];
+                    //String username=null;
+                    String message=null;
+                    try {
+                        //username=data.getString("from");
+                        message=data.getString("scrt");
+                    } catch (JSONException e) {
+                        Log.e(TAG,e.getMessage());
+                        e.printStackTrace();
+                    }
+                    System.out.println(message);
+                }
+            });
+        }
+    };
+
+    public void getscrt(){
+        mSocket=ChatApp.getSocket();
+
+        mSocket.on("scrt", onScrt);
+        mSocket.emit("scrt", "tes");
+
+
+    }
+
     private void showDialog(View view, Activity activity, User target){
         targets = new ArrayList<>();
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(view.getContext());
@@ -83,41 +115,18 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
                     public void onClick(DialogInterface dialog,int id) {
                         // jika tombol diklik, maka akan menutup activity ini
                         targets.add(target);
-                        mSocket=ChatApp.getSocket();
-                        mSocket.on("scrt", onScrt);
+                        getscrt();
 
-                        Emitter.Listener onScrt = new Emitter.Listener() {
-                            @Override
-                            public void call(final Object... args) {
-                                Log.w(TAG,"onNewMesage");
-                                activity.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        JSONObject data= (JSONObject)args[0];
-                                        String username=null;
-                                        String message=null;
-                                        try {
-                                            username=data.getString("from");
-                                            message=data.getString("message");
-                                        } catch (JSONException e) {
-                                            Log.e(TAG,e.getMessage());
-                                            e.printStackTrace();
-                                        }
 
-                                    }
-                                });
-                            }
-                        };
-
-                        scrt = response.substring(response.indexOf("[") + 1, response.indexOf("]"));
-                        t = response.substring(response.indexOf(")") + 1, response.length());
-                        if (Certificate.verify(t, scrt)) {
-                            System.out.println("\n[server]: " + scrt + " is verified by CA & want to make private conversation with you. Do you agree?");
-                        } else {
-                            System.out.println("\n[server]: " + scrt + " is not verified by CA & want to make private conversation with you. Do you agree?");
-                        }
-
-                        System.out.print("[" + this.client.getUserName() + "]: ");
+//                        scrt = response.substring(response.indexOf("[") + 1, response.indexOf("]"));
+//                        t = response.substring(response.indexOf(")") + 1, response.length());
+//                        if (Certificate.verify(t, scrt)) {
+//                            System.out.println("\n[server]: " + scrt + " is verified by CA & want to make private conversation with you. Do you agree?");
+//                        } else {
+//                            System.out.println("\n[server]: " + scrt + " is not verified by CA & want to make private conversation with you. Do you agree?");
+//                        }
+//
+//                        System.out.print("[" + this.client.getUserName() + "]: ");
                         Intent v=new Intent();
                         v.putExtra("targetID",targets.get(0).getID());
                         v.putExtra("targetName",targets.get(0).getUser());
