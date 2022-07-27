@@ -41,7 +41,10 @@ class Session {
 
         try {
             File myObj = new File(namefile);
-            myObj.createNewFile();
+
+            if (!myObj.createNewFile()) {
+                // file delete failed; take appropriate action
+            }
         } catch (IOException var10) {
             var10.printStackTrace();
         }
@@ -59,6 +62,9 @@ class Session {
 
     public static void hapus(String pub_a, String pub_b) {
         File file = new File("E:\\IKP\\ta\\SID\\" + pub_a + "_" + pub_b + ".txt");
-        file.delete();
+
+        if (!file.delete()) {
+            // file delete failed; take appropriate action
+        }
     }
 }

@@ -149,7 +149,11 @@ public class LoginActivity extends AppCompatActivity {
 
                 int size = input.available();
                 byte[] buffer = new byte[size];
-                input.read(buffer);
+
+                //int count = 0;
+                if(input.read(buffer)>0) {
+                    // ...
+                }
                 input.close();
 
                 // byte buffer into a string
