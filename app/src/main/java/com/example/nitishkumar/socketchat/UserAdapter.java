@@ -124,7 +124,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
                     public void onClick(DialogInterface dialog,int id) {
                         // jika tombol diklik, maka akan menutup activity ini
                         targets.add(target);
-                        getscrt();
+                        //getscrt();
 
 
 //                        scrt = response.substring(response.indexOf("[") + 1, response.indexOf("]"));
